@@ -10,18 +10,28 @@ var files embed.FS
 
 // Handler serves Swagger UI and the OpenAPI document.
 func Handler() http.Handler {
+	index := mustRead("index.html")
+	spec := mustRead("swagger.json")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case "/swagger", "/swagger/":
-			http.Redirect(w, r, "/swagger/index.html", http.StatusFound)
-		case "/swagger/index.html":
+		case "/swagger", "/swagger/", "/swagger/index.html":
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			http.ServeFileFS(w, r, files, "index.html")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write(index)
 		case "/swagger/doc.json", "/swagger/swagger.json":
 			w.Header().Set("Content-Type", "application/json")
-			http.ServeFileFS(w, r, files, "swagger.json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write(spec)
 		default:
 			http.NotFound(w, r)
 		}
 	})
+}
+
+func mustRead(name string) []byte {
+	body, err := files.ReadFile(name)
+	if err != nil {
+		panic(err)
+	}
+	return body
 }
