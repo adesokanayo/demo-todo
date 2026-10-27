@@ -1,0 +1,212 @@
+basePath: /
+definitions:
+  todo.CreateTodoRequest:
+    properties:
+      title:
+        example: Buy milk
+        type: string
+    type: object
+  todo.ErrorBody:
+    properties:
+      error:
+        example: title is required
+        type: string
+    type: object
+  todo.Health:
+    properties:
+      database:
+        example: up
+        type: string
+      status:
+        example: ok
+        type: string
+    type: object
+  todo.ServiceInfo:
+    properties:
+      docs:
+        example: /swagger/index.html
+        type: string
+      name:
+        example: demo-todo
+        type: string
+    type: object
+  todo.Todo:
+    properties:
+      created_at:
+        example: "2026-10-27T12:00:00Z"
+        type: string
+      done:
+        example: false
+        type: boolean
+      id:
+        example: 1
+        type: integer
+      title:
+        example: Buy milk
+        type: string
+    type: object
+  todo.TodoList:
+    properties:
+      todos:
+        items:
+          $ref: '#/definitions/todo.Todo'
+        type: array
+    type: object
+  todo.UpdateTodoRequest:
+    properties:
+      done:
+        example: true
+        type: boolean
+      title:
+        example: Buy oat milk
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Create, read, and update todos stored in Postgres.
+  title: Demo TODO API
+  version: "1.0"
+paths:
+  /:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/todo.ServiceInfo'
+      summary: API index
+      tags:
+      - meta
+  /health:
+    get:
+      description: Reports whether the API can reach Postgres.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/todo.Health'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/todo.Health'
+      summary: Health check
+      tags:
+      - meta
+  /todos:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/todo.TodoList'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/todo.ErrorBody'
+      summary: List todos
+      tags:
+      - todos
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Todo to create
+        in: body
+        name: todo
+        required: true
+        schema:
+          $ref: '#/definitions/todo.CreateTodoRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/todo.Todo'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/todo.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/todo.ErrorBody'
+      summary: Create a todo
+      tags:
+      - todos
+  /todos/{id}:
+    get:
+      parameters:
+      - description: Todo id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/todo.Todo'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/todo.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/todo.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/todo.ErrorBody'
+      summary: Get a todo
+      tags:
+      - todos
+    post:
+      consumes:
+      - application/json
+      description: Changes the title, the done flag, or both. Send only the fields
+        you want to change.
+      parameters:
+      - description: Todo id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to change
+        in: body
+        name: todo
+        required: true
+        schema:
+          $ref: '#/definitions/todo.UpdateTodoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/todo.Todo'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/todo.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/todo.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/todo.ErrorBody'
+      summary: Update a todo
+      tags:
+      - todos
+swagger: "2.0"
